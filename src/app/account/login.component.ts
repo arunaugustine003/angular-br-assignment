@@ -68,6 +68,7 @@ export class LoginComponent implements OnInit {
           let role = currentUser ? currentUser.role : '';
           console.log('role=', role);
           localStorage.setItem('role', role);
+          this.authService.recordLoginTime(currentUser);
           this.authService.GetIp().subscribe({
             next: (data) => {
               console.log('IP=', data.ip);
@@ -77,10 +78,13 @@ export class LoginComponent implements OnInit {
               console.log(error);
             },
           });
-
           if (role === 'Auditor') {
+            this.authService.isAuditor.next(true);
+            this.authService.isUser.next(false);
             this.router.navigate(['/audit']);
           } else if (role === 'User') {
+            this.authService.isUser.next(true);
+            this.authService.isAuditor.next(false);
             this.router.navigateByUrl(returnUrl);
           }
         },

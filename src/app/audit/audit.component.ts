@@ -13,6 +13,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { TooltipPosition } from '@angular/material/tooltip';
 import { FormControl } from '@angular/forms';
+import { AuthService } from '@app/auth.service';
 @Component({
   templateUrl: 'audit.component.html',
   styleUrls: ['./audit.component.less'],
@@ -50,7 +51,8 @@ export class AuditComponent implements OnInit, OnDestroy {
 
   constructor(
     public dialog: MatDialog,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private authService:AuthService
   ) {}
   async ngOnInit(): Promise<void> {
     // if(!this.isAdmin){
@@ -60,6 +62,7 @@ export class AuditComponent implements OnInit, OnDestroy {
     this.getAllUniqueDetails();
   }
   getAllUniqueDetails() {
+    /*
     this.accountService
       .getAll()
       .pipe(first())
@@ -73,15 +76,26 @@ export class AuditComponent implements OnInit, OnDestroy {
       (error: any) => {
         console.log(error);
       };
+      */
+      this.authService.getUserData().subscribe(users => {
+        this.users = users;
+        console.log('Users from Audit Component=', this.users);
+        this.dataSource = new MatTableDataSource(this.users);
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+      }),
+      (error: any) => {
+        console.log(error);
+      };
   }
   // Method to format time based on selected format
-  formatTime(time: string): string {
-    const options: Intl.DateTimeFormatOptions = this.timeFormat === '12'
-      ? { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }
-      : { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false };
+ formatTime(time: string): string {
+  const options: Intl.DateTimeFormatOptions = this.timeFormat === '12'
+    ? { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }
+    : { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false };
 
-    return new Date(time).toLocaleString('en-GB', options);
-  }
+  return new Date(time).toLocaleString('en-GB', options);
+}
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
@@ -103,4 +117,5 @@ export class AuditComponent implements OnInit, OnDestroy {
       .pipe(first())
       .subscribe(() => (this.users = this.users!.filter((x) => x.id !== id)));
   }
+  
 }

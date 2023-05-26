@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 
 import { environment } from '@environments/environment';
 import { User } from '@app/_models';
+import { AuthService } from '@app/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class AccountService {
@@ -14,7 +15,8 @@ export class AccountService {
 
     constructor(
         private router: Router,
-        private http: HttpClient
+        private http: HttpClient,
+        public authService:AuthService
     ) {
         this.userSubject = new BehaviorSubject(JSON.parse(localStorage.getItem('user')!));
         this.user = this.userSubject.asObservable();
@@ -35,8 +37,19 @@ export class AccountService {
     }
 
     logout() {
-        // remove user from local storage and set current user to null
+        let allUsers = localStorage.getItem(
+            'angular-14-registration-login-example-users'
+          );
+          let user = localStorage.getItem('user');
+          let user1 = user ? JSON.parse(user) : [];
+          let users = allUsers ? JSON.parse(allUsers) : [];
+          let currentUser = users.find(
+            (userObj: any) => userObj.username === user1.username
+          );
+          console.log('currentUser=', currentUser);
+          this.authService.recordLogoutTime(currentUser);
         localStorage.removeItem('user');
+        localStorage.removeItem('role');
         this.userSubject.next(null);
         this.router.navigate(['/account/login']);
     }
